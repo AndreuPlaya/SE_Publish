@@ -9,8 +9,10 @@ using SolidEdgeCommunity;
 
 namespace SolidEdgeMacro
 {
+    
     class Program
     {
+        [STAThread]
         static void Main(string[] args)
         {
             //Main variables declaration
@@ -57,7 +59,7 @@ namespace SolidEdgeMacro
 
                 //get collection og all properties
                 propertySets = (PropertySets)sePartDocument.Properties;
-
+                
                 //get collection of summary properties
                 propertiesSummary = propertySets.Item("SummaryInformation");
 
@@ -75,7 +77,7 @@ namespace SolidEdgeMacro
 
 
                 //get project properties
-                propertiesProject = propertySets.Item("ProjectIndofmormation");
+                propertiesProject = propertySets.Item("ProjectInformation");
 
                 //get properties
                 documentNumber = propertiesProject.Item("Document Number");
@@ -84,10 +86,9 @@ namespace SolidEdgeMacro
 
                 //set properties
 
-                documentNumber.set_Value(1); //set value requires a string, TEST if int is valid
+                documentNumber.set_Value("012345"); //set value requires a string, TEST if int is valid
                 //
                 //
-
 
             }
             catch (Exception e)
