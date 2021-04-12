@@ -4,15 +4,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SolidEdgeCommunity.Extensions;
 using SolidEdgeFramework;
-using SolidEdgePart;
+using SolidEdgeDraft;
 using SolidEdgeCommunity;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Runtime.InteropServices;
+using System.Windows.Forms;
+
 
 namespace SolidEdgeMacro
 {
-    
+
     class Program
     {
         [STAThread]
@@ -20,34 +24,61 @@ namespace SolidEdgeMacro
         {
             //Main variables declaration
             SolidEdgeFramework.Application seApplication = null;
-            SolidEdgeFramework.Documents seDocuments = null;
+            Documents seDocuments = null;
 
             //document variables declaration
-            SolidEdgePart.PartDocument sePartDocument = null;
-
-            //file properties delaration
-            SolidEdgeFramework.PropertySets propertySets = null; //Collection of all properties
+            DraftDocument seDraftDocument = null;
+            Sheet sheet = null;
 
 
-            ReadJsonFile(@"C:\Users\DEPSOFTWARE02\source\repos\SolidEdgeMacro\bin\Debug\data.json");
+
+            ReadJsonFile("data.json");
 
             try
             {
                 //register
                 OleMessageFilter.Register();
 
-                //connect to YOUR solidedge
-                seApplication = SolidEdgeCommunity.SolidEdgeUtils.Connect(true);
+                // Connect to a running instance of Solid Edge
+                seApplication = (SolidEdgeFramework.Application)Marshal.GetActiveObject("SolidEdge.Application");
+
                 //get the dobuments
                 seDocuments = seApplication.Documents;
 
                 //get active document
-                sePartDocument = (PartDocument)seApplication.ActiveDocument;
+                seDraftDocument = (DraftDocument)seApplication.ActiveDocument;
 
-                //get collection og all properties
-                propertySets = (PropertySets)sePartDocument.Properties;
 
-                
+                string tempPath = "C://";
+                string fileName = "patata123";
+                string extension = "pepe";
+
+                seDraftDocument.SaveAs(tempPath + fileName + "." + extension);
+
+                if (seDraftDocument != null)
+                {
+                    // Get a reference to the active sheet.
+                    sheet = seDraftDocument.ActiveSheet;
+
+                    SaveFileDialog dialog = new SaveFileDialog();
+
+                    // Set a default file name
+                    dialog.FileName = System.IO.Path.ChangeExtension(sheet.Name, ".emf");
+                    dialog.InitialDirectory = System.Environment.GetFolderPath(System.Environment.SpecialFolder.DesktopDirectory);
+                    dialog.Filter = "Enhanced Metafile (*.emf)|*.emf";
+
+                    if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    {
+                        // Save the sheet as an EMF file.
+                        sheet.SaveAsEnhancedMetafile(dialog.FileName);
+                        
+                        Console.WriteLine("Created '{0}'", dialog.FileName);
+                    }
+                }
+                else
+                {
+                    throw new System.Exception("No active document.");
+                }
 
 
             }
@@ -58,7 +89,8 @@ namespace SolidEdgeMacro
             }
             finally
             {
-                sePartDocument = null;
+                OleMessageFilter.Unregister();
+                seDraftDocument = null;
                 seDocuments = null;
                 seApplication = null;
             }
@@ -69,9 +101,36 @@ namespace SolidEdgeMacro
             dynamic jsonFile = JsonConvert.DeserializeObject(File.ReadAllText(jsonFileIn));
             Console.WriteLine($"Folder: { jsonFile["folder"]}");
         }
+
+        private static bool IsExtensionValid(string filename)
+        {
+            string[] validFileTypes = { "par", "psm", "asm", "dft", "pwd" };
+            string strFileNameOnly = string.Empty;
+
+            strFileNameOnly = System.IO.Path.GetFileName(filename);
+            if (string.IsNullOrEmpty(strFileNameOnly))
+                return false;
+            if (System.IO.Path.HasExtension(strFileNameOnly))
+            {
+                //it has an extension now check to see if it is a valid SE one
+                string strExtension = System.IO.Path.GetExtension(strFileNameOnly);
+                for (int i = 0; i < validFileTypes.Length; i++)
+                {
+                    if (strExtension.ToLower() == "." + validFileTypes[i].ToLower())
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
+    }
+        
+  
 
-    
 
-
-}

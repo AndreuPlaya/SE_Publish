@@ -1,5 +1,17 @@
-[
-  {
-    "folder":  "\myfolder"
-  }
- ]
+{
+    "doc1": {
+        "fileName": "test1",
+        "folder": "C://",
+        "extension": "part1"
+    },
+    "doc2": {
+        "fileName": "test2",
+        "folder": "C://",
+        "extension": "part2"
+    },
+    "doc3": {
+        "fileName": "test3",
+        "folder": "C://",
+        "extension": "part3"
+    }
+}
