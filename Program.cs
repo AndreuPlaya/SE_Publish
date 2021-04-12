@@ -1,4 +1,5 @@
 ﻿﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,6 +7,8 @@ using System.Threading.Tasks;
 using SolidEdgeFramework;
 using SolidEdgePart;
 using SolidEdgeCommunity;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace SolidEdgeMacro
 {
@@ -25,24 +28,8 @@ namespace SolidEdgeMacro
             //file properties delaration
             SolidEdgeFramework.PropertySets propertySets = null; //Collection of all properties
 
-            //some properties summary delaration
-            SolidEdgeFramework.Properties propertiesSummary = null; // collection of all summary properties
-            SolidEdgeFramework.Property title = null;
-            SolidEdgeFramework.Property subject = null;
-            SolidEdgeFramework.Property author = null;
-            SolidEdgeFramework.Property comments = null;
 
-            //project properties declaration
-            SolidEdgeFramework.Properties propertiesProject = null;
-            SolidEdgeFramework.Property documentNumber = null;
-            SolidEdgeFramework.Property revision = null;
-            SolidEdgeFramework.Property projectName = null;
-
-            //write variables
-            string newTitle;
-            string newSubject;
-            string newAuthor = "patata123";
-            string newcomments;
+            ReadJsonFile(@"C:\Users\DEPSOFTWARE02\source\repos\SolidEdgeMacro\bin\Debug\data.json");
 
             try
             {
@@ -59,36 +46,9 @@ namespace SolidEdgeMacro
 
                 //get collection og all properties
                 propertySets = (PropertySets)sePartDocument.Properties;
+
                 
-                //get collection of summary properties
-                propertiesSummary = propertySets.Item("SummaryInformation");
 
-                //get properties
-                title = propertiesSummary.Item("Title");
-                subject = propertiesSummary.Item("Subject");
-                author = propertiesSummary.Item("Author");
-                comments = propertiesSummary.Item("Comments");
-
-                //Set properties
-                title.set_Value(newAuthor);
-                //
-                //
-                //
-
-
-                //get project properties
-                propertiesProject = propertySets.Item("ProjectInformation");
-
-                //get properties
-                documentNumber = propertiesProject.Item("Document Number");
-                revision = propertiesProject.Item("Revision");
-                projectName = propertiesProject.Item("Project Name");
-
-                //set properties
-
-                documentNumber.set_Value("012345"); //set value requires a string, TEST if int is valid
-                //
-                //
 
             }
             catch (Exception e)
@@ -104,5 +64,14 @@ namespace SolidEdgeMacro
             }
 
         }
+        private static void ReadJsonFile(string jsonFileIn)
+        {
+            dynamic jsonFile = JsonConvert.DeserializeObject(File.ReadAllText(jsonFileIn));
+            Console.WriteLine($"Folder: { jsonFile["folder"]}");
+        }
     }
+
+    
+
+
 }
