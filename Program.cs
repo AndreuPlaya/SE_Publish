@@ -18,21 +18,12 @@ namespace SolidEdgeMacro
 {
 
     class Program
-    {
+        {
         [STAThread]
         static void Main(string[] args)
         {
             //Main variables declaration
             SolidEdgeFramework.Application seApplication = null;
-            Documents seDocuments = null;
-
-            //document variables declaration
-            DraftDocument seDraftDocument = null;
-            Sheet sheet = null;
-
-
-
-            ReadJsonFile("data.json");
 
             try
             {
@@ -42,45 +33,14 @@ namespace SolidEdgeMacro
                 // Connect to a running instance of Solid Edge
                 seApplication = (SolidEdgeFramework.Application)Marshal.GetActiveObject("SolidEdge.Application");
 
-                //get the dobuments
-                seDocuments = seApplication.Documents;
+                //get the documents
+                Documents seDocuments = seApplication.Documents;
 
-                //get active document
-                seDraftDocument = (DraftDocument)seApplication.ActiveDocument;
-
-
-                string tempPath = "C://";
-                string fileName = "patata123";
-                string extension = "pepe";
-
-                seDraftDocument.SaveAs(tempPath + fileName + "." + extension);
-
-                if (seDraftDocument != null)
+                for (int i = 0; i < seDocuments.Count; i++)
                 {
-                    // Get a reference to the active sheet.
-                    sheet = seDraftDocument.ActiveSheet;
-
-                    SaveFileDialog dialog = new SaveFileDialog();
-
-                    // Set a default file name
-                    dialog.FileName = System.IO.Path.ChangeExtension(sheet.Name, ".emf");
-                    dialog.InitialDirectory = System.Environment.GetFolderPath(System.Environment.SpecialFolder.DesktopDirectory);
-                    dialog.Filter = "Enhanced Metafile (*.emf)|*.emf";
-
-                    if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                    {
-                        // Save the sheet as an EMF file.
-                        sheet.SaveAsEnhancedMetafile(dialog.FileName);
-                        
-                        Console.WriteLine("Created '{0}'", dialog.FileName);
-                    }
+                    SolidEdgeDocument document = (SolidEdgeDocument)seDocuments.Item(i);
+                    Console.WriteLine(GetDocumentType(document));
                 }
-                else
-                {
-                    throw new System.Exception("No active document.");
-                }
-
-
             }
             catch (Exception e)
             {
@@ -90,18 +50,16 @@ namespace SolidEdgeMacro
             finally
             {
                 OleMessageFilter.Unregister();
-                seDraftDocument = null;
-                seDocuments = null;
-                seApplication = null;
             }
 
         }
+
         private static void ReadJsonFile(string jsonFileIn)
         {
             dynamic jsonFile = JsonConvert.DeserializeObject(File.ReadAllText(jsonFileIn));
             Console.WriteLine($"Folder: { jsonFile["folder"]}");
         }
-
+     
         private static bool IsExtensionValid(string filename)
         {
             string[] validFileTypes = { "par", "psm", "asm", "dft", "pwd" };
@@ -128,8 +86,38 @@ namespace SolidEdgeMacro
                 return false;
             }
         }
+        private static string GetDocumentType(SolidEdgeFramework.SolidEdgeDocument document)
+        {
+            string type = null;
+            switch (document.Type)
+            {
+                case SolidEdgeFramework.DocumentTypeConstants.igAssemblyDocument:
+                    type="Assembly Document";
+                    break;
+                case SolidEdgeFramework.DocumentTypeConstants.igDraftDocument:
+                    type = "Draft Document";
+                    break;
+                case SolidEdgeFramework.DocumentTypeConstants.igPartDocument:
+                    type = "Part Document";
+                    break;
+                case SolidEdgeFramework.DocumentTypeConstants.igSheetMetalDocument:
+                    type = "SheetMetal Document";
+                    break;
+                case SolidEdgeFramework.DocumentTypeConstants.igUnknownDocument:
+                    type = "Unknown Document";
+                    break;
+                case SolidEdgeFramework.DocumentTypeConstants.igWeldmentAssemblyDocument:
+                    type = "Weldment Assembly Document";
+                    break;
+                case SolidEdgeFramework.DocumentTypeConstants.igWeldmentDocument:
+                    type = "Weldment Document";
+                    break;
+            }
+            return type;
+        }
     }
-    }
+}
+
         
   
 
