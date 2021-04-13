@@ -39,7 +39,7 @@ namespace SolidEdgeMacro
                 for (int i = 0; i < seDocuments.Count; i++)
                 {
                     SolidEdgeDocument document = (SolidEdgeDocument)seDocuments.Item(i);
-                    Console.WriteLine(GetDocumentType(document));
+                    Console.WriteLine(GetDocumentType(document) + " : " +  document.Name);
                 }
             }
             catch (Exception e)
