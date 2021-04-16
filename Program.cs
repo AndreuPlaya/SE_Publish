@@ -57,6 +57,14 @@ namespace SolidEdgeMacro
                         activeSheet = activeDraft.ActiveSheet;
                         //activeSheet.DrawingObjects.Count
                         Console.WriteLine(activeSheet.DrawingObjects.Count);
+                        for(int i= 0; i< activeSheet.DrawingObjects.Count; i++)
+                        {
+                            Console.WriteLine(activeSheet.DrawingObjects.Item(i).GetType());
+                            if (GetDocumentType(activeSheet.DrawingObjects.Item(i)) == DocumentTypeConstants.igPartDocument)
+                            {
+                                SaveAsExtension((SolidEdgeFramework.SolidEdgeDocument)activeSheet.DrawingObjects.Item(i), folder, "stp");
+                            }
+                        }
 
                         Console.WriteLine(":>");
                         break;
