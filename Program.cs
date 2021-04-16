@@ -26,15 +26,9 @@ namespace SolidEdgeMacro
         static void Main(string[] args)
         {
             string folder = ConfigurationManager.AppSettings.Get("saveFolder");
-            SolidEdgeFramework.Application application = null;
-            SolidEdgeFramework.SolidEdgeDocument activeDocument = null;
-            SolidEdgeFramework.Documents documentList = null;
-            SolidEdgeDraft.DraftDocument activeDraft = null;
-            SolidEdgeDraft.Sheet activeSheet = null;
-
-
-
-
+            Application application = null;
+            SolidEdgeDocument activeDocument = null;
+            //DraftDocument activeDraft = null;
 
             try
             {
@@ -42,36 +36,30 @@ namespace SolidEdgeMacro
                 OleMessageFilter.Register();
 
                 // Attempt to connect to a running instance of Solid Edge.
-                application = (SolidEdgeFramework.Application)Marshal.GetActiveObject("SolidEdge.Application");
-                documentList = application.Documents;
-                activeDocument = (SolidEdgeFramework.SolidEdgeDocument)application.ActiveDocument;
+                application = (Application)Marshal.GetActiveObject("SolidEdge.Application");
+                
+                activeDocument = (SolidEdgeDocument)application.ActiveDocument;
                 
                 //execute different behaviour for different documet type
                 switch (GetDocumentType(application.ActiveDocument)) //grab document type form active document
                 {
                     case SolidEdgeFramework.DocumentTypeConstants.igDraftDocument:
                         Console.WriteLine("Grabbed draft document");
-                        //SaveAsExtension(activeDocument, folder, "dxf");
-                        //SaveAsExtension(activeDocument, folder, "pdf");
-                        activeDraft = (SolidEdgeDraft.DraftDocument)application.ActiveDocument;
-                        activeSheet = activeDraft.ActiveSheet;
-                        //activeSheet.DrawingObjects.Count
-                        Console.WriteLine(activeSheet.DrawingObjects.Count);
-                        for(int i= 0; i< activeSheet.DrawingObjects.Count; i++)
+                        SaveAsExtension(activeDocument, folder, "dxf");
+                        SaveAsExtension(activeDocument, folder, "pdf");
+                        DraftDocument activeDraft = (SolidEdgeDraft.DraftDocument)application.ActiveDocument;
+                        
+                        foreach(ModelLink modelLink in activeDraft.ModelLinks)
                         {
-                            Console.WriteLine(activeSheet.DrawingObjects.Item(i).GetType());
-                            if (GetDocumentType(activeSheet.DrawingObjects.Item(i)) == DocumentTypeConstants.igPartDocument)
+                            if (GetDocumentType(modelLink.ModelDocument) == DocumentTypeConstants.igPartDocument)
                             {
-                                SaveAsExtension((SolidEdgeFramework.SolidEdgeDocument)activeSheet.DrawingObjects.Item(i), folder, "stp");
+                                SaveAsExtension((SolidEdgeDocument)modelLink.ModelDocument, folder, "stp");
                             }
                         }
-
-                        Console.WriteLine(":>");
                         break;
                     case SolidEdgeFramework.DocumentTypeConstants.igPartDocument:
                         Console.WriteLine("Grabbed part document");
                         SaveAsExtension(activeDocument, folder, "stp");
-                        Console.WriteLine(":>");
                         break;
                     default:
                         Console.WriteLine("No valid document");
@@ -90,24 +78,19 @@ namespace SolidEdgeMacro
             {
                 OleMessageFilter.Unregister();
             }
-
-
-
-
-
         }
 
-        private static SolidEdgeFramework.DocumentTypeConstants GetDocumentType(object obj)
+        private static DocumentTypeConstants GetDocumentType(object obj)
         {
-            SolidEdgeFramework.SolidEdgeDocument document = (SolidEdgeFramework.SolidEdgeDocument)obj;
+            SolidEdgeDocument document = (SolidEdgeDocument)obj;
             return document.Type;
         }
 
-        private static void SaveAsExtension(SolidEdgeFramework.SolidEdgeDocument oDoc, string route, string extension)
+        private static void SaveAsExtension(SolidEdgeDocument oDoc, string route, string extension)
         {
             string savePath = route + @"\" + System.IO.Path.ChangeExtension(oDoc.Name, "."+ extension);
-            Console.WriteLine("Saved As: " + savePath);
             oDoc.SaveAs(savePath);
+            Console.WriteLine("Saved As: " + savePath);
         }
     }
 }
