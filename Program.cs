@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using SolidEdgeCommunity.Extensions;
 using SolidEdgeFramework;
 using SolidEdgeDraft;
+using SolidEdgePart;
 using SolidEdgeCommunity;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -14,33 +15,87 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 
+
+
 namespace SolidEdgeMacro
 {
 
+
+
     class Program
-        {
+    {
         [STAThread]
         static void Main(string[] args)
         {
-            //Main variables declaration
-            SolidEdgeFramework.Application seApplication = null;
+            string folder = @"C:\Users\j.batlle\Desktop\macro testing\save";
+            SolidEdgeFramework.Application application = null;
+            SolidEdgeFramework.SolidEdgeDocument activeDocument = null;
+            SolidEdgeFramework.Documents documentList = null;
+            SolidEdgeDraft.DraftDocument activeDraftDocument = null;
+            SolidEdgePart.PartDocument activePartDocument = null;
+
+
 
             try
             {
-                //register
+                // See "Handling 'Application is Busy' and 'Call was Rejected By Callee' errors" topic.
                 OleMessageFilter.Register();
 
-                // Connect to a running instance of Solid Edge
-                seApplication = (SolidEdgeFramework.Application)Marshal.GetActiveObject("SolidEdge.Application");
 
-                //get the documents
-                Documents seDocuments = seApplication.Documents;
 
-                for (int i = 0; i < seDocuments.Count; i++)
+                // Attempt to connect to a running instance of Solid Edge.
+                application = (SolidEdgeFramework.Application)Marshal.GetActiveObject("SolidEdge.Application");
+                SolidEdgeFramework.DocumentTypeConstants documentType = GetDocumentType(application.ActiveDocument);
+                documentList = application.Documents;
+                activeDocument = (SolidEdgeFramework.SolidEdgeDocument)application.ActiveDocument;
+                //string savePath = folder + @"\" + activeDocument.FullName + ".stp";
+                //Console.WriteLine(savePath);
+                //activeDocument.SaveAs(savePath);
+                foreach (SolidEdgeFramework.SolidEdgeDocument document in documentList) 
                 {
-                    SolidEdgeDocument document = (SolidEdgeDocument)seDocuments.Item(i);
-                    Console.WriteLine(GetDocumentType(document) + " : " +  document.Name);
+                    string savePath = folder + @"\" + document.FullName + ".stp";
+                    Console.WriteLine(savePath);
+                    document.SaveAs(savePath);
+                    savePath = folder + @"\" + document.FullName + ".dxf";
+                    Console.WriteLine(savePath);
+                    document.SaveAs(savePath);
+                    
                 }
+                Console.WriteLine("Todo ha salido a pedir de Milhouse");
+                /*switch (documentType)
+                {
+                    case SolidEdgeFramework.DocumentTypeConstants.igDraftDocument:
+                        Console.WriteLine("Grabbed draft document");
+                        activeDraftDocument = (SolidEdgeDraft.DraftDocument)application.ActiveDocument;
+
+
+
+                        break;
+                    case SolidEdgeFramework.DocumentTypeConstants.igPartDocument:
+                        Console.WriteLine("Grabbed part document");
+                        activePartDocument = (SolidEdgePart.PartDocument)application.ActiveDocument;
+                        //generate the document route
+
+
+
+                        //SaveAsPar(activePartDocument, documentRoute);
+                        string documentName = folder + @"\" + GetFileName(activePartDocument.Name);
+                        string extension = "stp";
+                        SaveAsExtension(activePartDocument, documentName, extension);
+
+                        Console.WriteLine("Todo ha salido a pedir de Milhouse");
+                        break;
+
+
+
+                    default:
+                        break;
+
+
+
+                }*/
+
+                Console.ReadKey();
             }
             catch (Exception e)
             {
@@ -52,73 +107,77 @@ namespace SolidEdgeMacro
                 OleMessageFilter.Unregister();
             }
 
+
+
         }
+
+
 
         private static void ReadJsonFile(string jsonFileIn)
         {
             dynamic jsonFile = JsonConvert.DeserializeObject(File.ReadAllText(jsonFileIn));
             Console.WriteLine($"Folder: { jsonFile["folder"]}");
         }
-     
-        private static bool IsExtensionValid(string filename)
-        {
-            string[] validFileTypes = { "par", "psm", "asm", "dft", "pwd" };
-            string strFileNameOnly = string.Empty;
 
-            strFileNameOnly = System.IO.Path.GetFileName(filename);
-            if (string.IsNullOrEmpty(strFileNameOnly))
-                return false;
-            if (System.IO.Path.HasExtension(strFileNameOnly))
+
+
+        private static bool IsExtensionValid(string strExtension)
+        {
+            string[] validFileTypes = { "par", "psm", "asm", "dft", "pwd", "stp",  };
+
+
+
+            for (int i = 0; i < validFileTypes.Length; i++)
             {
-                //it has an extension now check to see if it is a valid SE one
-                string strExtension = System.IO.Path.GetExtension(strFileNameOnly);
-                for (int i = 0; i < validFileTypes.Length; i++)
+                if (strExtension.ToLower() == validFileTypes[i].ToLower())
                 {
-                    if (strExtension.ToLower() == "." + validFileTypes[i].ToLower())
-                    {
-                        return true;
-                    }
+                    return true;
                 }
-                return false;
+            }
+            return false;
+        }
+        private static SolidEdgeFramework.DocumentTypeConstants GetDocumentType(object obj)
+        {
+            SolidEdgeFramework.SolidEdgeDocument document = (SolidEdgeFramework.SolidEdgeDocument)obj;
+            return document.Type;
+        }
+
+
+
+
+        private static void SaveAsExtension(SolidEdgePart.PartDocument oDoc, string route, string extension)
+        {
+            if (IsExtensionValid(extension))
+            {
+                string sExpFile = System.IO.Path.ChangeExtension(oDoc.FullName, "." + extension);
+                string fullRoute = route + sExpFile;
+                Console.WriteLine("Saved As: " + fullRoute);
+                //oDoc.SaveCopyAs(fullRoute);
+                oDoc.SaveAs(fullRoute);
+
             }
             else
             {
-                return false;
+                Console.WriteLine("invalid extension: " + extension);
             }
         }
-        private static string GetDocumentType(SolidEdgeFramework.SolidEdgeDocument document)
+        private static string GetFileName(string fileName)
         {
-            string type = null;
-            switch (document.Type)
+            int fileExtPos = fileName.LastIndexOf(".");
+            int filePathPos = fileName.LastIndexOf(@"\");
+            if (filePathPos < 0)
             {
-                case SolidEdgeFramework.DocumentTypeConstants.igAssemblyDocument:
-                    type="Assembly Document";
-                    break;
-                case SolidEdgeFramework.DocumentTypeConstants.igDraftDocument:
-                    type = "Draft Document";
-                    break;
-                case SolidEdgeFramework.DocumentTypeConstants.igPartDocument:
-                    type = "Part Document";
-                    break;
-                case SolidEdgeFramework.DocumentTypeConstants.igSheetMetalDocument:
-                    type = "SheetMetal Document";
-                    break;
-                case SolidEdgeFramework.DocumentTypeConstants.igUnknownDocument:
-                    type = "Unknown Document";
-                    break;
-                case SolidEdgeFramework.DocumentTypeConstants.igWeldmentAssemblyDocument:
-                    type = "Weldment Assembly Document";
-                    break;
-                case SolidEdgeFramework.DocumentTypeConstants.igWeldmentDocument:
-                    type = "Weldment Document";
-                    break;
+                filePathPos = 0;
             }
-            return type;
+            if (fileExtPos < 0)
+            {
+                fileExtPos = fileName.Length;
+            }
+            fileName = fileName.Substring(filePathPos, fileExtPos);
+
+
+
+            return fileName.ToLower();
         }
     }
 }
-
-        
-  
-
-
