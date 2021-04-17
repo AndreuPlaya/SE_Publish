@@ -5,10 +5,8 @@ using SolidEdgeDraft;
 using SolidEdgeCommunity;
 using System.Runtime.InteropServices;
 
-
 namespace SolidEdgeMacro
 {
-
     class Program
     {
         [STAThread]
@@ -25,7 +23,7 @@ namespace SolidEdgeMacro
 
                 // Attempt to connect to a running instance of Solid Edge.
                 application = (Application)Marshal.GetActiveObject("SolidEdge.Application");
-                
+                //get active document
                 activeDocument = (SolidEdgeDocument)application.ActiveDocument;
                 
                 //execute different behaviour for different documet type
@@ -51,13 +49,13 @@ namespace SolidEdgeMacro
                                 
                                 if (asmDocument.Name.Contains("MPF"))
                                 {
-                                    Console.WriteLine("MPF named document: " + asmDocument.Name);
+                                    Console.WriteLine("Found MPF named document: " + asmDocument.Name);
                                     SaveAsExtension((SolidEdgeDocument)modelLink.ModelDocument, folder, "stp");
                                     break;
                                 }
                                 else
                                 {
-                                    Console.WriteLine("Found an non MPF asembly document, skipping conversion");
+                                    Console.WriteLine("Found an non MPF asembly document: " + asmDocument.Name);
                                 }
                             }
 
@@ -71,7 +69,6 @@ namespace SolidEdgeMacro
                         Console.WriteLine("No valid document");
                         break;
                 }
-                
                 Console.WriteLine("Todo ha salido a pedir de Milhouse");
                 Console.ReadKey();
             }
