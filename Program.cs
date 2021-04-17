@@ -17,7 +17,6 @@ namespace SolidEdgeMacro
             string folder = ConfigurationManager.AppSettings.Get("saveFolder");
             Application application = null;
             SolidEdgeDocument activeDocument = null;
-            //DraftDocument activeDraft = null;
 
             try
             {
@@ -34,8 +33,8 @@ namespace SolidEdgeMacro
                 {
                     case DocumentTypeConstants.igDraftDocument:
                         Console.WriteLine("Grabbed draft document");
-                        //SaveAsExtension(activeDocument, folder, "dxf");
-                        //SaveAsExtension(activeDocument, folder, "pdf");
+                        SaveAsExtension(activeDocument, folder, "dxf");
+                        SaveAsExtension(activeDocument, folder, "pdf");
                         DraftDocument activeDraft = (SolidEdgeDraft.DraftDocument)application.ActiveDocument;
                         
                         foreach(ModelLink modelLink in activeDraft.ModelLinks)
