@@ -35,29 +35,35 @@ namespace SolidEdgeMacro
                         Console.WriteLine("Grabbed draft document");
                         SaveAsExtension(activeDocument, folder, "dxf");
                         SaveAsExtension(activeDocument, folder, "pdf");
-                        DraftDocument activeDraft = (SolidEdgeDraft.DraftDocument)application.ActiveDocument;
+                        DraftDocument activeDraft = (DraftDocument)application.ActiveDocument;
                         
                         foreach(ModelLink modelLink in activeDraft.ModelLinks)
                         {
                             if (GetDocumentType((SolidEdgeDocument)modelLink.ModelDocument) == DocumentTypeConstants.igPartDocument)
                             { 
                                 SaveAsExtension((SolidEdgeDocument)modelLink.ModelDocument, folder, "stp");
+                                break;
                             }
 
                             if (GetDocumentType((SolidEdgeDocument)modelLink.ModelDocument) == DocumentTypeConstants.igAssemblyDocument)
                             {
-                                
                                 SolidEdgeDocument asmDocument = (SolidEdgeDocument)modelLink.ModelDocument;
-                                Console.WriteLine("found an assembly document: " + asmDocument.Name);
+                                
                                 if (asmDocument.Name.Contains("MPF"))
                                 {
+                                    Console.WriteLine("MPF named document: " + asmDocument.Name);
                                     SaveAsExtension((SolidEdgeDocument)modelLink.ModelDocument, folder, "stp");
+                                    break;
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Found an non MPF asembly document, skipping conversion");
                                 }
                             }
 
                         }
                         break;
-                    case SolidEdgeFramework.DocumentTypeConstants.igPartDocument:
+                    case DocumentTypeConstants.igPartDocument:
                         Console.WriteLine("Grabbed part document");
                         SaveAsExtension(activeDocument, folder, "stp");
                         break;
