@@ -31,31 +31,31 @@ namespace SolidEdgeMacro
                 {
                     case DocumentTypeConstants.igDraftDocument:
                         Console.WriteLine("Grabbed draft document");
-                        SaveAsExtension(activeDocument, folder, "dxf");
-                        SaveAsExtension(activeDocument, folder, "pdf");
-                        DraftDocument activeDraft = (DraftDocument)application.ActiveDocument;
+                        SaveAsExtension(activeDocument, folder, "dxf"); //save the active document on the specified folder as dxf
+                        SaveAsExtension(activeDocument, folder, "pdf"); //save the active document on the specified folder as pdf
+                        DraftDocument activeDraft = (DraftDocument)application.ActiveDocument; //cast the active document as a draftDocument to access the model link
                         
-                        foreach(ModelLink modelLink in activeDraft.ModelLinks)
+                        foreach(ModelLink modelLink in activeDraft.ModelLinks) //loop for all model links found in the model link
                         {
                             if (GetDocumentType((SolidEdgeDocument)modelLink.ModelDocument) == DocumentTypeConstants.igPartDocument)
                             { 
-                                SaveAsExtension((SolidEdgeDocument)modelLink.ModelDocument, folder, "stp");
+                                SaveAsExtension((SolidEdgeDocument)modelLink.ModelDocument, folder, "stp"); // cast the individual modelLlink.ModelDocument as a model document and save it
                                 break;
                             }
 
                             if (GetDocumentType((SolidEdgeDocument)modelLink.ModelDocument) == DocumentTypeConstants.igAssemblyDocument)
                             {
-                                SolidEdgeDocument asmDocument = (SolidEdgeDocument)modelLink.ModelDocument;
-                                
-                                if (asmDocument.Name.Contains("MPF"))
+                                SolidEdgeDocument asmDocument = (SolidEdgeDocument)modelLink.ModelDocument;// cast the individual modelLlink.ModelDocument as a model document
+
+                                if (asmDocument.Name.Contains("MPF")) // quick string check if contains the letters MPF
                                 {
                                     Console.WriteLine("Found MPF named document: " + asmDocument.Name);
-                                    SaveAsExtension((SolidEdgeDocument)modelLink.ModelDocument, folder, "stp");
+                                    SaveAsExtension((SolidEdgeDocument)modelLink.ModelDocument, folder, "stp"); //save the model link document on the specified folder as stp
                                     break;
                                 }
                                 else
                                 {
-                                    Console.WriteLine("Found an non MPF asembly document: " + asmDocument.Name);
+                                    Console.WriteLine("Found an non MPF asembly document: " + asmDocument.Name); // found nothing here
                                 }
                             }
 
@@ -63,10 +63,10 @@ namespace SolidEdgeMacro
                         break;
                     case DocumentTypeConstants.igPartDocument:
                         Console.WriteLine("Grabbed part document");
-                        SaveAsExtension(activeDocument, folder, "stp");
+                        SaveAsExtension(activeDocument, folder, "stp"); // save the part document in the specified folder as stp
                         break;
                     default:
-                        Console.WriteLine("No valid document");
+                        Console.WriteLine("No valid document"); // found nothing here
                         break;
                 }
                 Console.WriteLine("Todo ha salido a pedir de Milhouse");
@@ -79,14 +79,15 @@ namespace SolidEdgeMacro
             }
             finally
             {
-                OleMessageFilter.Unregister();
+                OleMessageFilter.Unregister(); // unlink application after completion
             }
         }
 
-        private static DocumentTypeConstants GetDocumentType(object obj)
+        private static DocumentTypeConstants GetDocumentType(object obj) //simple method to handle the conversion and get the document type
         {
             SolidEdgeDocument document = (SolidEdgeDocument)obj;
             return document.Type;
+
         }
 
         private static void SaveAsExtension(SolidEdgeDocument oDoc, string route, string extension)
