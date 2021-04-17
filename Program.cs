@@ -43,18 +43,30 @@ namespace SolidEdgeMacro
                 //execute different behaviour for different documet type
                 switch (GetDocumentType(application.ActiveDocument)) //grab document type form active document
                 {
-                    case SolidEdgeFramework.DocumentTypeConstants.igDraftDocument:
+                    case DocumentTypeConstants.igDraftDocument:
                         Console.WriteLine("Grabbed draft document");
-                        SaveAsExtension(activeDocument, folder, "dxf");
-                        SaveAsExtension(activeDocument, folder, "pdf");
+                        //SaveAsExtension(activeDocument, folder, "dxf");
+                        //SaveAsExtension(activeDocument, folder, "pdf");
                         DraftDocument activeDraft = (SolidEdgeDraft.DraftDocument)application.ActiveDocument;
                         
                         foreach(ModelLink modelLink in activeDraft.ModelLinks)
                         {
-                            if (GetDocumentType(modelLink.ModelDocument) == DocumentTypeConstants.igPartDocument)
-                            {
+                            if (GetDocumentType((SolidEdgeDocument)modelLink.ModelDocument) == DocumentTypeConstants.igPartDocument)
+                            { 
                                 SaveAsExtension((SolidEdgeDocument)modelLink.ModelDocument, folder, "stp");
                             }
+
+                            if (GetDocumentType((SolidEdgeDocument)modelLink.ModelDocument) == DocumentTypeConstants.igAssemblyDocument)
+                            {
+                                
+                                SolidEdgeDocument asmDocument = (SolidEdgeDocument)modelLink.ModelDocument;
+                                Console.WriteLine("found an assembly document: " + asmDocument.Name);
+                                if (asmDocument.Name.Contains("MPF"))
+                                {
+                                    SaveAsExtension((SolidEdgeDocument)modelLink.ModelDocument, folder, "stp");
+                                }
+                            }
+
                         }
                         break;
                     case SolidEdgeFramework.DocumentTypeConstants.igPartDocument:
@@ -88,8 +100,8 @@ namespace SolidEdgeMacro
 
         private static void SaveAsExtension(SolidEdgeDocument oDoc, string route, string extension)
         {
-            string savePath = route + @"\" + System.IO.Path.ChangeExtension(oDoc.Name, "."+ extension);
-            oDoc.SaveAs(savePath);
+            string savePath = route + @"\" + System.IO.Path.ChangeExtension(oDoc.Name, "." + extension);
+            oDoc.SaveCopyAs(savePath);
             Console.WriteLine("Saved As: " + savePath);
         }
     }
