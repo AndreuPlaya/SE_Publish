@@ -1,20 +1,9 @@
 ﻿using System;
-using System.IO;
 using System.Configuration;
-using System.Collections.Specialized;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using SolidEdgeCommunity.Extensions;
 using SolidEdgeFramework;
 using SolidEdgeDraft;
-using SolidEdgePart;
 using SolidEdgeCommunity;
 using System.Runtime.InteropServices;
-
-
-
-
 
 
 namespace SolidEdgeMacro
